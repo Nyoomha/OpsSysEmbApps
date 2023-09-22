@@ -31,12 +31,13 @@ int main() {
 
         token = strtok(input, " ");  // will split tokens whereever theres a space
 
-        parseCmd(token);
-
         while (token != NULL) {     //* keep looping as long as it finds tokens
             tokens[token_count++] = token;
-            token                 = strtok(NULL, " ");  //* gets next token from input 
+            parseCmd(token);
+            token = strtok(NULL, " ");  //* gets next token from input 
         }
+
+       // parseCmd(token);
 
         // Fork a child process
         pid = fork();
@@ -91,11 +92,12 @@ void help() //function for shell help command
 
 void parseCmd(char* parsed) //checks built in cmds for shell
 {
-    char* listCmds[3];
+    char* listCmds[4];
     int tok;
     listCmds[0] = "exit";
     listCmds[1] = "help";
     listCmds[2] = "date";
+    listCmds[3] = "cd";
 
     for(int i = 0; i < 3; i++)
     {
@@ -108,12 +110,29 @@ void parseCmd(char* parsed) //checks built in cmds for shell
         case 0:
             exit(0);
             break;
+
         case 1:
             help();
             break;
+
         case 2:
             printf(__DATE__"\n");
             break;
+       
+        case 3:
+            if (parsed[1] != '\0') {
+                if (chdir(parsed + 1) == 0) {
+                    
+                } 
+                else {
+                    perror("chdir");
+                }
+            } else {
+                printf("cd <directory>\n");
+            }
+            break;
+
+
         default:
             break; 
     }
