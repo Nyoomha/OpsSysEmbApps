@@ -11,9 +11,11 @@
 
 void help();
 void parseCmd(char* parsed);
+void init_shell();
 
 int main() {
     char input[max_input];
+    init_shell();
 
     while (1) {
         printf("Shell> ");
@@ -27,7 +29,6 @@ int main() {
         char *tokens[max_input];
         int token_count = 0;         // will track the amount of arguments
         pid_t pid = 0;
-        int cmp;                     //Comparison variable for strcmp
 
         token = strtok(input, " ");  // will split tokens whereever theres a space
 
@@ -37,7 +38,6 @@ int main() {
             token = strtok(NULL, " ");  //* gets next token from input 
         }
 
-       // parseCmd(token);
 
         // Fork a child process
         pid = fork();
@@ -66,9 +66,6 @@ int main() {
                     int my_pid = getpid();
                     int state;
                     pid_t wait_pid = wait(&state);
-
-                    //printf("Hi from the parent (my_pid = %d, child pid = %d)\n", my_pid, pid);
-                    //printf("Child process finished: wait_pid = %d, state = %d\n", wait_pid, state);
                     break;
                 }
         }
@@ -118,11 +115,11 @@ void parseCmd(char* parsed) //checks built in cmds for shell
         case 2:
             printf(__DATE__"\n");
             break;
-       
+
         case 3:
             if (parsed[1] != '\0') {
                 if (chdir(parsed + 1) == 0) {
-                    
+
                 } 
                 else {
                     perror("chdir");
@@ -136,4 +133,13 @@ void parseCmd(char* parsed) //checks built in cmds for shell
         default:
             break; 
     }
+}
+
+void init_shell()
+{    printf("\n\n\n\n**"
+        "**");
+    printf("\n\n\n\tNO NAME SHELL");
+    printf("\n\n\t\t%s", "\u263A");
+    printf("\n\n\n\n**"
+        "**\n");
 }
