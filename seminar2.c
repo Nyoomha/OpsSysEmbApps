@@ -1,25 +1,26 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <limits.h> // Include for INT_MAX
+#include <stdbool.h>
 
 typedef struct _process {
-    int tickets;      // Number of lottery tickets for the process
-    char name;         // Process name
-    int length;        // Remaining execution time
-    int t_stride;      // Time stride for the lottery scheduling
-    int pass;          // Pass value used for lottery scheduling
-    struct _process *next;
+    int pid;
+    char name;
+    int length;
+    int tickets;
+    int t_stride;
+    int pass;
+
+    struct _process * next;
 } process;
 
 typedef struct _queue {
-    int count;         // Number of processes in the queue
-    process *first;    // Pointer to the first process in the queue
-    process *last;     // Pointer to the last process in the queue
+    int count;
+    process * first;
+    process * last;
 } queue;
 
-// Function to create an empty queue
-queue *create_queue() {
-    queue *result = (queue *)malloc(sizeof(queue));
+queue * create_queue() {
+    queue* result = (queue *)malloc(sizeof(queue));
     result->count = 0;
     result->first = NULL;
     result->last = NULL;
@@ -27,106 +28,174 @@ queue *create_queue() {
     return result;
 }
 
-// Function to create a new process
-process *create_process(char name, int tickets, int length) {
-    process *result = (process *)malloc(sizeof(process));
-    result->tickets = tickets;
+process* create_process(int pid, char name, int length, int tickets, int latency) {
+    process* result = (process *)malloc(sizeof(process));
     result->length = length;
     result->name = name;
-    result->t_stride = 10000 / tickets;  // Adjust as needed
+    result->pid = pid;
+    result->tickets = tickets;
+    result->t_stride = (latency/tickets);
     result->pass = 0;
     result->next = NULL;
 
     return result;
 }
 
-// Function to add a process to the end of the queue
-int add(queue *my_queue, process *new_process) {
-    if (my_queue == NULL)
+int add(queue* my_queue, process* new_proces) {
+    if(my_queue == NULL) 
         return -1;
 
     ++my_queue->count;
 
-    if (my_queue->first == NULL) {
-        my_queue->first = new_process;
-        my_queue->last = new_process;
+    if(my_queue->first == NULL){
+        my_queue->first = new_proces;
+        my_queue->last = new_proces;
     } else {
-        my_queue->last->next = new_process;
-        my_queue->last = new_process;
+        my_queue->last->next = new_proces;
+        my_queue->last = new_proces;
     }
 
     return 0;
 }
 
-// Function to remove and return the first process from the queue
-process *remove_process(queue *my_queue) {
-    if (my_queue == NULL)
+
+process* remove_process(queue* my_queue) {
+    if(my_queue == NULL) 
         return NULL;
 
-    if (my_queue->first == NULL)
+    if(my_queue->first == NULL) 
         return NULL;
 
     --my_queue->count;
 
-    process *result = my_queue->first;
+    process* result = my_queue->first;
 
     my_queue->first = result->next;
 
-    if (my_queue->count == 0)
+    if(my_queue->count == 0)
         my_queue->last = NULL;
 
     result->next = NULL;
     return result;
 }
 
-// Lottery Stride Scheduling Function
-void lottery_stride(queue *my_queue) {
-    if (my_queue == NULL)
-        return;
+// returns total execution time
+int rr(queue* my_queue, int time_slice) {
+    int total = 0;
+    if(my_queue == NULL) 
+        return -1;
 
-    while (my_queue->count > 0) {
-        process *selected_process = NULL;
-        int min_pass = INT_MAX;
+        process* run_process = remove_process(my_queue);
+        total += 1;
 
-        process *current_process = my_queue->first;
+        /*...*/
+        
+        /*...*/
 
-        // Find the process with the smallest pass value
-        while (current_process != NULL) {
-            if (current_process->pass < min_pass) {
-                min_pass = current_process->pass;
-                selected_process = current_process;
-            }
-            current_process = current_process->next;
-        }
+        //if(time_slice > run_process->length)
+        if(time_slice >= run_process->length)
+            total += run_process->length;
+        else 
+            total += time_slice;
 
-        if (selected_process != NULL) {
-            printf("\n%s executes (RR)", selected_process->name);
-
-            // Update pass and length
-            selected_process->pass += selected_process->t_stride;
-
-            if (selected_process->length > 0) {
-                printf("\n%s tickets = %d, length = %d, t_stride = %d, pass = %d",
-                       selected_process->name, selected_process->tickets, selected_process->length,
-                       selected_process->t_stride, selected_process->pass);
-
-                selected_process->length--;
-
-                if (selected_process->length > 0)
-                    add(my_queue, selected_process); // Re-add to the queue if more execution is needed
-            } else {
-                printf("\n%s is done", selected_process->name);
-            }
-        }
-    }
+        run_process->length -= time_slice;
+        run_process->pass += run_process->t_stride;
+        printf("\nprocess %c is selected to run (length = %d) (tickets = %d) (pass = %d) (t_stride = %d)", run_process->name, run_process->length, run_process->tickets, run_process->pass, run_process->t_stride);
+        if(run_process->length > 0)
+            insert(my_queue, run_process);
+    
 }
 
-// Main function
-int main() {
-    queue *my_q = create_queue();
-    add(my_q, create_process('A', 100, 10));
-    add(my_q, create_process('B', 50, 7));
-    add(my_q, create_process('C', 200, 3));
+int lottery_stride(queue* my_queue)
+{
+    
+    if (my_queue == NULL)
+        return -1;
+
+    //rr(my_queue, 5);
+    /*while (!check_pass(my_queue)) //if there are pass values that are equal we run RR until there are
+    {
+        rr(my_queue, 5);
+    }*/
+
+    //Add remaining code to make it loop until processes are finished
+
+    while (my_queue -> count > 0)
+    {
+        rr(my_queue, 5);
+
+        if (my_queue -> count == 0)
+        {
+            printf("All processes finished\n");
+            break;
+        }
+    }
+
+    return 0;
+}
+
+int insert(queue* my_queue, process* succ) //Function for inserting a successor process where it should be in the queue (sorted by size of pass)
+{
+    process* pred_process = my_queue->first; 
+    if(my_queue->first->pass>=succ->pass)
+        {
+            succ->next = my_queue->first;
+            my_queue->first = succ;
+            return 0;
+        }
+    if(my_queue->last->pass<=succ->pass)
+    {
+        succ->next = NULL;
+        my_queue->last = succ;
+        return 0;
+    }
+    //for(int i = 0; i > my_queue->count - 1; i++)
+    for(int i = 0; i < my_queue -> count - 1; i++)
+    {
+        if(pred_process->pass<=succ->pass && succ->pass<=pred_process->next->pass)
+            {
+                succ->next = pred_process->next;
+                pred_process->next = succ;
+                return 0;
+            }
+        pred_process = pred_process->next;
+    }
+    return -1;
+
+}
+
+bool check_pass(queue* my_queue) //return false if there are equal pass, return true if all pass are different
+{
+    int pass_array[my_queue->count];
+    int count = my_queue->count;
+    for (int i = 0; i > count; i++) //Loop for cloning pass values to size of queue length
+    {   process* temp_process = remove_process(my_queue);
+        pass_array[i] = temp_process->pass;
+        add(my_queue, temp_process);
+    }
+    int length = sizeof(pass_array)/sizeof(pass_array[0]);
+    int min = pass_array[0];
+     for (int i = 0; i < length; i++) 
+     {        
+       if(pass_array[i] < min)    
+           min = pass_array[i];
+        if(i > 0 && min == pass_array[i])
+            return false;
+     }
+     
+    return true;
+}
+
+int main(int argc, char** argv) {
+    int latency = 10000;
+    queue* my_q = create_queue();
+    process * p_1 = create_process(1, 'a', 30, 100, latency);
+    process * p_2 = create_process(2, 'b', 70, 50, latency);
+    process * p_3 = create_process(3, 'c', 10, 200, latency);
+
+    add(my_q, p_1);
+    add(my_q, p_2);
+    add(my_q, p_3);
 
     lottery_stride(my_q);
 
