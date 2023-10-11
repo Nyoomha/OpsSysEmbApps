@@ -114,8 +114,10 @@ int rr(queue* my_queue, int time_slice) {
         printf("\nprocess %c is selected to run (length = %d) (tickets = %d) (pass = %d) (t_stride = %d)", run_process->name, run_process->length, run_process->tickets, run_process->pass, run_process->t_stride);
          // If process still has work to do go back in the queue
         if(run_process->length > 0)
+        {
+            ++my_queue->count;
             insert(my_queue, run_process);
-    
+        }
 }
 
 int lottery_stride(queue* my_queue)
@@ -170,6 +172,7 @@ int insert(queue* my_queue, process* succ)
                                             // <= to the pass value of the process being inserted
     {
         succ->next = NULL;      // updates next line as the new last process
+        my_queue->last->next = succ;  
         my_queue->last = succ;  
         return 0;
     }
