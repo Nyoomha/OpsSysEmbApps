@@ -126,7 +126,7 @@ int lottery_stride(queue* my_queue)
 
         if (my_queue -> count == 0)
         {
-            printf("All processes finished\n");
+            printf("\nAll processes finished");
             break;
         }
     }
@@ -134,35 +134,45 @@ int lottery_stride(queue* my_queue)
     return 0;
 }
 
-int insert(queue* my_queue, process* succ) //Function for inserting a successor process where it should be in the queue (sorted by size of pass)
+int insert(queue* my_queue, process* succ)
 {
-    process* pred_process = my_queue->first; 
-    if(my_queue->first->pass>=succ->pass)
+    process* pred_process = my_queue->first;
+
+    if (my_queue->first == NULL || my_queue->first->pass >= succ->pass)
+    {
+        succ->next = my_queue->first;
+        my_queue->first = succ;
+
+        if (my_queue->last == NULL)
         {
-            succ->next = my_queue->first;
-            my_queue->first = succ;
-            return 0;
+            // If the queue was empty, update last to point to the only element
+            my_queue->last = succ;
         }
-    if(my_queue->last->pass<=succ->pass)
+
+        return 0;
+    }
+
+    if (my_queue->last->pass <= succ->pass)
     {
         succ->next = NULL;
         my_queue->last = succ;
         return 0;
     }
-    //for(int i = 0; i > my_queue->count - 1; i++)
-    for(int i = 0; i < my_queue -> count - 1; i++)
+
+    for (int i = 0; i < my_queue->count - 1; i++)
     {
-        if(pred_process->pass<=succ->pass && succ->pass<=pred_process->next->pass)
-            {
-                succ->next = pred_process->next;
-                pred_process->next = succ;
-                return 0;
-            }
+        if (pred_process->pass <= succ->pass && succ->pass <= pred_process->next->pass)
+        {
+            succ->next = pred_process->next;
+            pred_process->next = succ;
+            return 0;
+        }
         pred_process = pred_process->next;
     }
-    return -1;
 
+    return -1;
 }
+
 
 bool check_pass(queue* my_queue) //return false if there are equal pass, return true if all pass are different
 {
