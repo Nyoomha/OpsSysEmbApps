@@ -7,20 +7,22 @@
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-static int ready = 0;
-static int done = 0;
+static int ready = 0; // ready to be consume
+static int done = 0; // items consumed
 
 static void* thread_produce(void *args){
     int ret;
-    for (;done < 100 ;){
+    for (;done < 100 ;){ // loop until done = 100
         ret = pthread_mutex_lock(&mtx);
         if (ret != 0) return NULL;
         ++ready;
         printf("+");
         ret = pthread_mutex_unlock(&mtx);
         if(ret !=0) return NULL;
+        // check for error
         pthread_cond_signal(&cond);
         if(ret !=0) return NULL;
+        // check for error
         usleep(1000 * 100);
     }
 }
