@@ -1,1 +1,0 @@
-cmd_/shared_folder/test_mod.ko := ld -r -m elf_x86_64 -z noexecstack --build-id=sha1  -T scripts/module.lds -o /shared_folder/test_mod.ko /shared_folder/test_mod.o /shared_folder/test_mod.mod.o;  true
